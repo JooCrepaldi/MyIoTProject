@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { env } from 'expo-env';
 import { StyleSheet, View, Text } from 'react-native';
 import MQTTService from './src/services/mqttService';
 import StatusModal from './src/components/StatusModal';
@@ -11,16 +10,23 @@ const mqtt = new MQTTService();
 export default function App() {
   const [isConnected, setIsConnected] = useState(false);
   const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [isLightOn, setIsLightOn] = useState(false);
   const [temp, setTemp] = useState(0);
   const [hum, setHum] = useState(0);
 
+  const mqttHost = process.env.EXPO_PUBLIC_MQTT_HOST ?? process.env.MQTT_HOST;
+  const mqttPort = process.env.EXPO_PUBLIC_MQTT_PORT ?? process.env.MQTT_PORT;
+  const mqttPath = process.env.EXPO_PUBLIC_MQTT_PATH ?? process.env.MQTT_PATH;
+  const mqttUser = process.env.EXPO_PUBLIC_MQTT_USER ?? process.env.MQTT_USER;
+  const mqttPass = process.env.EXPO_PUBLIC_MQTT_PASS ?? process.env.MQTT_PASS;
+
   const mqttConfig = {
-    host: env.MQTT_HOST,
-    port: parseInt(env.MQTT_PORT),
-    path: env.MQTT_PATH,
-    user: env.MQTT_USER,
-    pass: env.MQTT_PASS,
+    host: mqttHost,
+    port: parseInt(mqttPort, 10),
+    path: mqttPath,
+    user: mqttUser,
+    pass: mqttPass,
     clientId: 'RN_App_' + Math.random(),
   };
 
@@ -29,7 +35,17 @@ export default function App() {
   }, []);
   
   const startConnection = () => {
+    const isConfigComplete = mqttHost && mqttPort && mqttPath && mqttUser && mqttPass;
+
+    if (!isConfigComplete) {
+      setIsConnected(false);
+      setErrorMessage('Configuração do broker incompleta. Preencha as variáveis EXPO_PUBLIC_MQTT_HOST, EXPO_PUBLIC_MQTT_PORT, EXPO_PUBLIC_MQTT_PATH, EXPO_PUBLIC_MQTT_USER e EXPO_PUBLIC_MQTT_PASS no arquivo .env.');
+      setShowError(true);
+      return;
+    }
+
     setShowError(false);
+    setErrorMessage('');
     mqtt.connect(
       mqttConfig,
       (topic, message) => {
@@ -45,6 +61,7 @@ export default function App() {
       },
       (err) => {
         setIsConnected(false);
+        setErrorMessage('Não foi possível conectar ao Broker HiveMQ. Verifique sua conexão e credenciais.');
         setShowError(true);
       }
     );
@@ -66,6 +83,7 @@ export default function App() {
       {/* Componente de Status de Conexão */}
       <StatusModal
         visible={showError}
+        message={errorMessage}
         onRetry={startConnection}
         onLater={() => setShowError(false)}
       />

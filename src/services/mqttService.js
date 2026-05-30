@@ -1,5 +1,5 @@
 import init from 'react_native_mqtt';
-import { AsyncStorage } from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Inicializa a biblioteca com suporte a armazenamento local
 init({

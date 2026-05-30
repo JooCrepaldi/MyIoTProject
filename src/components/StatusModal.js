@@ -1,15 +1,12 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Modal } from 'react-native';
 
-const StatusModal = ({ visible, onRetry, onLater }) => {
+const StatusModal = ({ visible, message, onRetry, onLater }) => {
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalText}>
-            Não foi possível conectar ao Broker HiveMQ.
-            Verifique sua conexão e credenciais.
-          </Text>
+          <Text style={styles.modalText}>{message}</Text>
 
           <TouchableOpacity style={styles.btnRetry} onPress={onRetry}>
             <Text style={styles.btnText}>Tentar Novamente</Text>
